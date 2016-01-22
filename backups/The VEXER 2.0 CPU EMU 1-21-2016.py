@@ -1,13 +1,10 @@
-import time,os,sys,socket,threading
-from _thread import *
+import time,os,sys,socket
 #12-BIT ROM SYSTEM
-#ROM 6-bit(64)
+#ROM 8x8(64)
 print("insert the filename of the ROM")
 address=input()
 file = open("ROMS/" + address + ".vex")
-#"VEXER 2.0 v1.2 CPU EMU"
-#132x65
-screensize=132*65
+#"VEXER 2.0 v1.2 CPU EMU",640 320)
 #    $A$B$C#D$E$F$G$H
 REGS=[0,0,0,0,0,0,0,0]
 # ID: 0 1 2 3 4 5 6 7
@@ -25,78 +22,78 @@ for i in file:
     ROM[RC]=i
     RC+=1
 while True:
-    time.sleep(0)
+    time.sleep(0.5)
     data=str.split(ROM[PC])
     #print(PC,data,ALUA,ALUB,ALUC,REGS,STACK)
-    if data[0] == "systemInput" or data[0] == 0x3:
+    if data[0] == "systemInput":
         REGS[int(data[2])]=int(data[1])
         PC+=1
-    if data[0] == "userInput" or data[0] == 0x4:
+    if data[0] == "userInput":
         REGS[int(data[1])]=int(input())
         PC+=1
-    if data[0] == "setALU" or data[0] == 0x1:
+    if data[0] == "setALU":
         if data[1] == "A" or data[1] == "a":
             ALUA=REGS[int(data[2])]
         elif data[1] == "B" or data[1] == "b":
             ALUB=REGS[int(data[2])]
         PC+=1
-    if data[0] == "ALU" or data[0] == 0x2:
-        if data[1] == "add" or data[1] == "ADD" or data[1] == 0x0:
+    if data[0] == "ALU":
+        if data[1] == "add" or data[1] == "ADD":
             REGS[5]=0
             REGS[int(data[2])]=ALUA+ALUB
             if REGS[int(data[2])] > 0xFF:
                 REGS[int(data[2])]-=0xFF
-        elif data[1] == "adc" or data[1] == "ADC" or data[1] == 0x1:
+        elif data[1] == "adc" or data[1] == "ADC":
             REGS[5]=0
             REGS[int(data[2])]=ALUA+ALUB
             if REGS[int(data[2])] > 0xFF:
                 REGS[int(data[2])]-=0xFF
                 REGS[5]=1
-        elif data[1] == "sub" or data[1] == "SUB" or data[1] == 0x2:
+        elif data[1] == "sub" or data[1] == "SUB":
             REGS[5]=1
             REGS[int(data[2])]=ALUA-ALUB
             if REGS[int(data[2])] < -0xFF:
                 REGS[int(data[2])]+=0xFF
-        elif data[1] == "sbc" or data[1] == "SBC" or data[1] == 0x3:
+        elif data[1] == "sbc" or data[1] == "SBC":
             REGS[5]=1
             REGS[int(data[2])]=ALUA-ALUB
             if REGS[int(data[2])] < -0xFF:
                 REGS[int(data[2])]+=0xFF
                 REGS[5]=0
-        elif data[1] == "shl" or data[1] == "SHL" or data[1] == 0x4:
+        elif data[1] == "shl" or data[1] == "SHL":
             ALUC=ALUA*2
             if ALUC > 0xFF:
                 ALUC-=0xFF
             REGS[int(data[2])]=ALUC
-        elif data[1] == "shr" or data[1] == "SHR" or data[1] == 0x5:
+        elif data[1] == "shr" or data[1] == "SHR":
             ALUC=ALUA/2
             if ALUC < 0xFF:
                 ALUC+=0xFF
             REGS[int(data[2])]=ALUC
-        elif data[1] == "and" or data[1] == "AND" or data[1] == 0x6:
+        elif data[1] == "and" or data[1] == "AND":
             ALUC=ALUA&ALUB
             REGS[int(data[2])]=ALUC
-        elif data[1] == "or" or data[1] == "OR" or data[1] == 0x7:
+        elif data[1] == "or" or data[1] == "OR":
             ALUC=ALUA|ALUB
             REGS[int(data[2])]=ALUC
-        elif data[1] == "xor" or data[1] == "XOR" or data[1] == 0x8:
+        elif data[1] == "xor" or data[1] == "XOR":
             ALUC=ALUA|ALUB
             ALUC=ALUA&ALUB
             REGS[int(data[2])]=ALUC
-        elif data[1] == "inv" or data[1] == "INV" or data[1] == 0x9:
+        elif data[1] == "inv" or data[1] == "INV":
             ALUC=-ALUA
             REGS[int(data[2])]=ALUC
         PC+=1
-    if data[0] == "print" or data[0] == 0x5:
+    if data[0] == "print":
         print(REGS[int(data[1])])
         PC+=1
-    if data[0] == "JMP" or data[0] == 0x6:
+    if data[0] == "JMP":
         if int(data[1]) == 0:
             PC=int(data[2])-1
         if int(data[1]) == 1:
             PC=REGS[int(data[2])]-1
-    if data[0] == "ifF" or data[0] == 0x7:
-        if int(REGS[5]) == int(data[1]):
+    if data[0] == "ifF":
+        if REGS[5] == int(data[1]):
             PC=PC+1
         else:
             PC=PC+2

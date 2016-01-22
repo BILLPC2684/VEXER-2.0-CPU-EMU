@@ -1,0 +1,64 @@
+systemInput 1 0 #0=REGA #fib
+systemInput 0 1 #1=REGB
+setALU A 0 #loop
+ALU adc 1
+print 1
+ifF 1
+JMP 0 1
+setALU B 1
+ALU adc 0
+print 0
+ifF 1
+JMP 0 1
+JMP 0 3
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP

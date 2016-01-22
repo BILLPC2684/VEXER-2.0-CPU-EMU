@@ -28,6 +28,7 @@ while True:
     time.sleep(0.5)
     data=str.split(ROM[PC])
     #print(PC,data,ALUA,ALUB,ALUC,REGS,STACK)
+    #print("["+str(REGS[5])+"]")
     if data[0] == "systemInput" or data[0] == 0x3:
         REGS[int(data[2])]=int(data[1])
         PC+=1
@@ -35,34 +36,38 @@ while True:
         REGS[int(data[1])]=int(input())
         PC+=1
     if data[0] == "setALU" or data[0] == 0x1:
-        if data[1] == "A" or data[1] == "a":
+        if data[1] == "A" or data[1] == "a" or data[1] == 0x0:
             ALUA=REGS[int(data[2])]
-        elif data[1] == "B" or data[1] == "b":
+        elif data[1] == "B" or data[1] == "b" or data[1] == 0x1:
             ALUB=REGS[int(data[2])]
         PC+=1
     if data[0] == "ALU" or data[0] == 0x2:
         if data[1] == "add" or data[1] == "ADD" or data[1] == 0x0:
             REGS[5]=0
-            REGS[int(data[2])]=ALUA+ALUB
-            if REGS[int(data[2])] > 0xFF:
-                REGS[int(data[2])]-=0xFF
+            ALUC=ALUA+ALUB
+            if ALUC > 0xFF:
+                ALUC-=0xFF
+            REGS[int(data[2])]=ALUC
         elif data[1] == "adc" or data[1] == "ADC" or data[1] == 0x1:
             REGS[5]=0
-            REGS[int(data[2])]=ALUA+ALUB
-            if REGS[int(data[2])] > 0xFF:
-                REGS[int(data[2])]-=0xFF
+            ALUC=ALUA+ALUB
+            if ALUC > 0xFF:
+                ALUC-=0xFF
                 REGS[5]=1
+            REGS[int(data[2])]=ALUC
         elif data[1] == "sub" or data[1] == "SUB" or data[1] == 0x2:
             REGS[5]=1
-            REGS[int(data[2])]=ALUA-ALUB
-            if REGS[int(data[2])] < -0xFF:
-                REGS[int(data[2])]+=0xFF
+            ALUC=ALUA-ALUB
+            if ALUC < -0xFF:
+                ALUC+=0xFF
+            REGS[int(data[2])]=ALUC
         elif data[1] == "sbc" or data[1] == "SBC" or data[1] == 0x3:
             REGS[5]=1
-            REGS[int(data[2])]=ALUA-ALUB
-            if REGS[int(data[2])] < -0xFF:
-                REGS[int(data[2])]+=0xFF
+            ALUC=ALUA-ALUB
+            if ALUC < -0xFF:
+                ALUC+=0xFF
                 REGS[5]=0
+            REGS[int(data[2])]=ALUC
         elif data[1] == "shl" or data[1] == "SHL" or data[1] == 0x4:
             ALUC=ALUA*2
             if ALUC > 0xFF:
@@ -96,7 +101,7 @@ while True:
         if int(data[1]) == 1:
             PC=REGS[int(data[2])]-1
     if data[0] == "ifF" or data[0] == 0x7:
-        if int(REGS[5]) == int(data[1]):
+        if REGS[5] == int(data[1]):
             PC=PC+1
         else:
             PC=PC+2

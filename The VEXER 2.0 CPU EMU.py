@@ -25,7 +25,7 @@ for i in file:
     ROM[RC]=i
     RC+=1
 while True:
-    time.sleep(0)
+    time.sleep(0.5)
     data=str.split(ROM[PC])
     #print(PC,data,ALUA,ALUB,ALUC,REGS,STACK)
     if data[0] == "systemInput" or data[0] == 0x3:

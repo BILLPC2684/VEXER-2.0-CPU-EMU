@@ -11,7 +11,7 @@ ALU adc 0
 ifF 1
 JMP 0 1
 print 0
-NOP
+JMP 0 4
 NOP
 NOP
 NOP

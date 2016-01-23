@@ -1,10 +1,10 @@
-systemInput 1 0
-systemInput 1 1
-setALU B 1
-setALU A 0
-print 0
-ALU add 0
-JMP 0 4
+3 1 0
+3 1 1
+1 1 1
+1 0 0
+5 0
+2 0 0
+6 0 4
 NOP
 NOP
 NOP

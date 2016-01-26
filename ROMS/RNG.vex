@@ -1,4 +1,4 @@
-ALU RNGA-B 0
+ALU RNG 0
 print 0 0
 print 1 0
 JMP 0 1

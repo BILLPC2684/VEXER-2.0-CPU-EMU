@@ -1,25 +1,63 @@
-import time,os,sys,socket,threading
+import time,os,sys,socket,threading,random
 from _thread import *
-#12-BIT ROM SYSTEM
-#ROM 6-bit(64)
+#8-BIT SYSTEM
+#6-BIT ROM SYSTEM(64)
 print("insert the filename of the ROM")
 address=input()
 file = open("ROMS/" + address + ".vex")
 #"VEXER 2.0 v1.2 CPU EMU"
 #132x65
-screensize=132*65
+H=32
+W=12
+screensize=H*W
+#OPCODES:
+#1#setALU <A/B> <REGID>
+#2#ALU <ADD/SUB/ADC/SBC/OR/AND/XOR/SHL/SHR/RNG/RNGA-B/</=/>/INV> <REGID(out)>
+#3#systemInput <REGID(out)> <VALUE>
+#4#userInput <REGID(out)>
+#5#print <0(print in DEC),1(print in HEX)> <REGID>
+#6#JMP PC=<REGID>
+#7#ifF F(Flag)==<ARG> (if true PC+1 if false PC+2)
+#8#RAM <setPos/setPosREG/write/read> <setPos:data/REGID(in/out)>
+#9#SCREEN <SetX,SetY,SetX2,SetY2,WritePixel,ReadPixel,Line(x-y,x2-y2)> <REGID(in/out)>
+#A#
+#B#
+#C#
+#D#
+#E#
+#F#
 #    $A$B$C#D$E$F$G$H
 REGS=[0,0,0,0,0,0,0,0]
 # ID: 0 1 2 3 4 5 6 7
+functionREGS=[0,0,0,0,0,0,0,0]
+#         ID: 0 1 2 3 4 5 6 7
+X=0
+Y=0
+X2=0
+Y2=0
+VIDEO={}
+I=0
+while I != screensize:
+    VIDEO[I]=0
+    I+=1
 PC=0x00
 RAM=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 RAMPOS=0x00
+tempID=0
 SP=0x00
-STACK={}
+STACK=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ALUA=0x00
 ALUB=0x00
 ALUC=0x00
 RC=0
+debug = 0
 ROM={}
 for i in file:
     ROM[RC]=i
@@ -27,8 +65,8 @@ for i in file:
 while True:
     time.sleep(0.5)
     data=str.split(ROM[PC])
-    #print(PC,data,ALUA,ALUB,ALUC,REGS,STACK)
-    #print("["+str(REGS[5])+"]")
+    if debug == 1:
+        print(PC,data,ALUA,ALUB,ALUC,REGS,functionREGS,STACK)
     if data[0] == "systemInput" or data[0] == "3":
         REGS[int(data[2])]=int(data[1])
         PC+=1
@@ -88,12 +126,28 @@ while True:
             ALUC=ALUA|ALUB
             ALUC=ALUA&ALUB
             REGS[int(data[2])]=ALUC
-        elif data[1] == "inv" or data[1] == "INV" or data[1] == "9":
+        elif data[1] == "<" or data[1] == "9":
+            if ALUA<ALUB:
+                REGS[5]=2
+        elif data[1] == ">" or data[1] == "A":
+            if ALUA>ALUB:
+                REGS[5]=3
+        elif data[1] == "=" or data[1] == "B":
+            if ALUA==ALUB:
+                REGS[5]=4
+        elif data[1] == "inv" or data[1] == "INV" or data[1] == "C":
             ALUC=-ALUA
             REGS[int(data[2])]=ALUC
+        elif data[1] == "rng" or data[1] == "RNG" or data[1] == "D":
+            REGS[int(data[2])]=random.randint(0,255)
+        elif data[1] == "rngA-B" or data[1] == "RNGA-B" or data[1] == "e":
+            REGS[int(data[2])]=random.randint(ALUA,ALUB)
         PC+=1
     if data[0] == "print" or data[0] == "5":
-        print(REGS[int(data[1])])
+        if int(data[1]) == 0:
+         print(REGS[int(data[2])])
+        if int(data[1]) == 1:
+         print(hex(REGS[int(data[2])]))
         PC+=1
     if data[0] == "JMP" or data[0] == "6":
         if int(data[1]) == 0:
@@ -105,3 +159,26 @@ while True:
             PC=PC+1
         else:
             PC=PC+2
+    if data[0] == "RAM" or data[0] == "9":
+        if data[1] == "setPos":
+            RAMPOS=int(data[2])
+        if data[1] == "setPosREG":
+            RAMPOS=REGS[int(data[2])]
+        if data[1] == "write":
+            RAM[RAMPOS]=REGS[int(data[2])]
+        if data[1] == "read":
+            REGS[int(data[2])]=RAM[RAMPOS]
+    if data[0] == "SCREEN" or data[0] == "A":
+        if data[1] == "SetX":
+            X=data[2]
+        if data[1] == "SetY":
+            Y=data[2]
+        if data[1] == "SetX2":
+            X2=data[2]
+        if data[1] == "SetY2":
+            Y2=data[2]
+        if data[1] == "WritePixel":
+            if X >= 0 and Y >= 0:
+                VIDEO[X,Y]=data[2]
+        #if data[1] == "Line":
+            #(x-y,x2-y2)

@@ -1,11 +1,15 @@
-function set 1
-function load0 0
-function load1 1
+userInput 0
+userInput 1
 setALU A 0
 setALU B 1
-ALU add 0
-function save1 0
-function end 1
+ALU RNGA-B 0
+print 0 0
+print 1 0
+JMP 0 5
+NOP
+NOP
+NOP
+NOP
 NOP
 NOP
 NOP

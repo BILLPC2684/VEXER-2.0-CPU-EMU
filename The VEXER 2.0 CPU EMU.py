@@ -57,7 +57,7 @@ ALUA=0x00
 ALUB=0x00
 ALUC=0x00
 RC=0
-debug = 1
+debug = 0
 ROM={}
 for i in file:
     ROM[RC]=i

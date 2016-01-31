@@ -36,9 +36,15 @@ Y=0
 X2=0
 Y2=0
 VIDEO={}
+TEST="["
 I=0
-while I != screensize:
-    VIDEO[I]=0
+while I != W:
+    TEST+="0,"
+    I+=1
+TEST+="0]"
+I=0
+while I != H:
+    VIDEO[I]=(TEST)
     I+=1
 PC=0x00
 RAM=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -71,7 +77,10 @@ while True:
         REGS[int(data[2])]=int(data[1])
         PC+=1
     if data[0] == "userInput" or data[0] == "4":
-        REGS[int(data[1])]=int(input())
+        inpdata=int(input())
+        if inpdata > 0xFF:
+            inpdata-=0xFF
+        REGS[int(data[1])]=inpdata
         PC+=1
     if data[0] == "setALU" or data[0] == "1":
         if data[1] == "A" or data[1] == "a" or data[1] == "0":
@@ -178,7 +187,36 @@ while True:
         if data[1] == "SetY2":
             Y2=data[2]
         if data[1] == "WritePixel":
-            if X >= 0 and Y >= 0:
+            if X >= 0 and Y >= 0 and X <= W and Y <= H:
                 VIDEO[X,Y]=data[2]
-        #if data[1] == "Line":
+        if data[1] == "Line":
             #(x-y,x2-y2)
+            while X != X2 and Y!=Y2:
+                if X >= 0 and Y >= 0 and X <= W and Y <= H:
+                    VIDEO[X,Y]=data[2]
+                if X > X2:
+                    X-=1
+                elif X < X2:
+                    X+=1
+                if Y > Y2:
+                    Y-=1
+                elif Y < Y2:
+                    Y+=1
+        if data[1] == "update":
+            while io!=100:
+                print("")
+            sys.stdout.write("/")
+            while io!=W-2:
+                sys.stdout.write("-")
+            sys.stdout.write("\\")
+            while io2!=H:
+                sys.stdout.write("|")
+                while io!=W-2:
+                    sys.stdout.write(VIDEO[io2][io])
+                sys.stdout.write("|")
+            sys.stdout.write("\\")
+            while io!=W-2:
+                sys.stdout.write("-")
+            sys.stdout.write("/")
+
+

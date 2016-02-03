@@ -1,14 +1,15 @@
 import time,os,sys,socket,threading,random
+#from graphics import *
 from _thread import *
 #8-BIT SYSTEM
 #6-BIT ROM SYSTEM(64)
 print("insert the filename of the ROM")
 address=input()
 file = open("ROMS/" + address + ".vex")
-#"VEXER 2.0 v1.2 CPU EMU"
+H=16
+W=32
+#win = GraphWin("VEXER 2.0 v1.2 CPU EMU",W,H)
 #132x65
-H=32
-W=12
 screensize=H*W
 #OPCODES:
 #1#setALU <A/B> <REGID>
@@ -35,17 +36,48 @@ X=0
 Y=0
 X2=0
 Y2=0
-VIDEO={}
-TEST="["
+VIDEO=[]
+loadedimage=[]
+io=0
+while io!=W:
+    loadedimage+=0,
+    io+=1
+io2=0
+print(loadedimage)
+while io2!=H:
+    VIDEO+=list(loadedimage)
+    io2+=1
+
+def line(x0, x1, y0, y1, color): # most code from Voltzlive
+  dx = abs(x1-x0)
+  if x0<x1 :
+    sx = 1
+  else:
+    sx = -1
+  dy = -abs(y1-y0)
+  if y0<y1 :
+    sy = 1
+  else:
+    sy = -1
+  err = dx+dy
+  e2 = 0
+  while True:
+    X=x0
+    Y=y0
+    if not(Y<0 or X<0 and Y>H-1 or X>W-1):
+        if W*Y-(W*Y>0) >= 0:
+            VIDEO[(W*Y-(W*Y>0))+X+(1*Y>0)]=color
+    if x0==x1 and y0==y1:
+        break
+    e2 = 2*err
+    if e2 >= dy:
+      err += dy
+      x0 += sx
+    if e2 <= dx: 
+      err += dx
+      y0 += sy
+
 I=0
-while I != W:
-    TEST+="0,"
-    I+=1
-TEST+="0]"
-I=0
-while I != H:
-    VIDEO[I]=(TEST)
-    I+=1
 PC=0x00
 RAM=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 RAMPOS=0x00
@@ -155,13 +187,13 @@ while True:
     if data[0] == "print" or data[0] == "5":
         if int(data[1]) == 0:
          print(REGS[int(data[2])])
-        if int(data[1]) == 1:
+        elif int(data[1]) == 1:
          print(hex(REGS[int(data[2])]))
         PC+=1
     if data[0] == "JMP" or data[0] == "6":
         if int(data[1]) == 0:
             PC=int(data[2])-1
-        if int(data[1]) == 1:
+        elif int(data[1]) == 1:
             PC=REGS[int(data[2])]-1
     if data[0] == "ifF" or data[0] == "7":
         if REGS[5] == int(data[1]):
@@ -171,52 +203,59 @@ while True:
     if data[0] == "RAM" or data[0] == "9":
         if data[1] == "setPos":
             RAMPOS=int(data[2])
-        if data[1] == "setPosREG":
+        elif data[1] == "setPosREG":
             RAMPOS=REGS[int(data[2])]
-        if data[1] == "write":
+        elif data[1] == "write":
             RAM[RAMPOS]=REGS[int(data[2])]
-        if data[1] == "read":
+        elif data[1] == "read":
             REGS[int(data[2])]=RAM[RAMPOS]
+        PC+=1
     if data[0] == "SCREEN" or data[0] == "A":
         if data[1] == "SetX":
-            X=data[2]
-        if data[1] == "SetY":
-            Y=data[2]
-        if data[1] == "SetX2":
-            X2=data[2]
-        if data[1] == "SetY2":
-            Y2=data[2]
-        if data[1] == "WritePixel":
-            if X >= 0 and Y >= 0 and X <= W and Y <= H:
-                VIDEO[X,Y]=data[2]
-        if data[1] == "Line":
+            X=int(data[2])
+        elif data[1] == "SetY":
+            Y=int(data[2])
+        elif data[1] == "SetX2":
+            X2=int(data[2])
+        elif data[1] == "SetY2":
+            Y2=int(data[2])
+        elif data[1] == "Plot":
+            if not(Y<0 or X<0 and Y>H-1 or X>W-1):
+                if W*Y-(W*Y>0) >= 0:
+                    VIDEO[(W*Y-(W*Y>0))+X+(1*Y>0)]=int(data[2])
+        elif data[1] == "Line":
             #(x-y,x2-y2)
-            while X != X2 and Y!=Y2:
-                if X >= 0 and Y >= 0 and X <= W and Y <= H:
-                    VIDEO[X,Y]=data[2]
-                if X > X2:
-                    X-=1
-                elif X < X2:
-                    X+=1
-                if Y > Y2:
-                    Y-=1
-                elif Y < Y2:
-                    Y+=1
-        if data[1] == "update":
-            while io!=100:
-                print("")
+            line(X,X2,Y,Y2,int(data[2]))
+        elif data[1] == "update":
+            sysio=0
+            io=0
             sys.stdout.write("/")
-            while io!=W-2:
+            while io!=W:
                 sys.stdout.write("-")
+                io+=1
+            sys.stdout.write("\\\n")
+            io2=0
+            while io2!=H+1:
+                if io2!=0:
+                    sys.stdout.write("|")
+                    while io!=W:
+                        #print(io2)
+                        if io2!=H+1:
+                            #print(io2)
+                            if VIDEO[sysio] == 0:
+                                sys.stdout.write(" ")
+                            elif VIDEO[sysio] == 1:
+                                sys.stdout.write("█")
+                            sysio+=1
+                            io+=1
+                if io2!=0:
+                    sys.stdout.write("|\n")
+                io2+=1
+                io=0
             sys.stdout.write("\\")
-            while io2!=H:
-                sys.stdout.write("|")
-                while io!=W-2:
-                    sys.stdout.write(VIDEO[io2][io])
-                sys.stdout.write("|")
-            sys.stdout.write("\\")
-            while io!=W-2:
+            io=0
+            while io!=W:
                 sys.stdout.write("-")
-            sys.stdout.write("/")
-
-
+                io+=1
+            sys.stdout.write("/\n")
+        PC+=1

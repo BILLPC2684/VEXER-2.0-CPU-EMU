@@ -2,12 +2,12 @@ import time,os,sys,socket,threading,random
 #from graphics import *
 from _thread import *
 #8-BIT SYSTEM
-#6-BIT ROM SYSTEM(64)
+#7-BIT ROM SYSTEM
 print("insert the filename of the ROM")
 address=input()
 file = open("ROMS/" + address + ".vex")
-H=16
-W=32
+H=32#16
+W=128#32
 #win = GraphWin("VEXER 2.0 v1.2 CPU EMU",W,H)
 #132x65
 screensize=H*W
@@ -101,7 +101,7 @@ for i in file:
     ROM[RC]=i
     RC+=1
 while True:
-    time.sleep(0.5)
+    time.sleep(0.01)#.5)
     data=str.split(ROM[PC])
     if debug == 1:
         print(PC,data,ALUA,ALUB,ALUC,REGS,functionREGS,STACK)
@@ -196,10 +196,32 @@ while True:
         elif int(data[1]) == 1:
             PC=REGS[int(data[2])]-1
     if data[0] == "ifF" or data[0] == "7":
-        if REGS[5] == int(data[1]):
-            PC=PC+1
-        else:
-            PC=PC+2
+        if data[1] == "0":
+            if REGS[5] == 0:
+                PC=PC+1
+            else:
+                PC=PC+2
+        if data[1] == "1":
+            if REGS[5] == 1:
+                PC=PC+1
+            else:
+                PC=PC+2
+        if data[1] == "=" or data[1] == "2":
+            if REGS[5] == int(data[2]):
+                PC=PC+1
+            else:
+                PC=PC+2
+        if data[1] == "<" or data[1] == "3":
+            if REGS[5] < int(data[2]):
+                PC=PC+1
+            else:
+                PC=PC+2
+        if data[1] == ">" or data[1] == "4":
+            if REGS[5] > int(data[2]):
+                PC=PC+1
+            else:
+                PC=PC+2
+
     if data[0] == "RAM" or data[0] == "9":
         if data[1] == "setPos":
             RAMPOS=int(data[2])
@@ -211,22 +233,34 @@ while True:
             REGS[int(data[2])]=RAM[RAMPOS]
         PC+=1
     if data[0] == "SCREEN" or data[0] == "A":
-        if data[1] == "SetX":
+        if data[1] == "SetX" or data[1] == "0":
             X=int(data[2])
-        elif data[1] == "SetY":
+        elif data[1] == "SetY" or data[1] == "1":
             Y=int(data[2])
-        elif data[1] == "SetX2":
+        elif data[1] == "SetX2" or data[1] == "2":
             X2=int(data[2])
-        elif data[1] == "SetY2":
+        elif data[1] == "SetY2" or data[1] == "3":
             Y2=int(data[2])
-        elif data[1] == "Plot":
+        elif data[1] == "REGSetX" or data[1] == "4":
+            X=REGS[int(data[2])]
+        elif data[1] == "REGSetY" or data[1] == "5":
+            Y=REGS[int(data[2])]
+        elif data[1] == "REGSetX2" or data[1] == "6":
+            X2=REGS[int(data[2])]
+        elif data[1] == "REGSetY2" or data[1] == "7":
+            Y2=REGS[int(data[2])]
+        elif data[1] == "plot" or data[1] == "8":
             if not(Y<0 or X<0 and Y>H-1 or X>W-1):
                 if W*Y-(W*Y>0) >= 0:
                     VIDEO[(W*Y-(W*Y>0))+X+(1*Y>0)]=int(data[2])
-        elif data[1] == "Line":
+        elif data[1] == "plotREGcolor" or data[1] == "9":
+            if not(Y<0 or X<0 and Y>H-1 or X>W-1):
+                if W*Y-(W*Y>0) >= 0:
+                    VIDEO[(W*Y-(W*Y>0))+X+(1*Y>0)]=REGS[int(data[2])]
+        elif data[1] == "Line" or data[1] == "A":
             #(x-y,x2-y2)
             line(X,X2,Y,Y2,int(data[2]))
-        elif data[1] == "update":
+        elif data[1] == "update" or data[1] == "B":
             sysio=0
             io=0
             sys.stdout.write("/")
@@ -246,6 +280,12 @@ while True:
                                 sys.stdout.write(" ")
                             elif VIDEO[sysio] == 1:
                                 sys.stdout.write("█")
+                            elif VIDEO[sysio] == 2:
+                                sys.stdout.write("▓")
+                            elif VIDEO[sysio] == 3:
+                                sys.stdout.write("▒")
+                            elif VIDEO[sysio] == 4:
+                                sys.stdout.write("░")
                             sysio+=1
                             io+=1
                 if io2!=0:
